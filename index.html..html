@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Horizon Hotel - Enterprise PMS & HMS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#0f4c81',
+                            800: '#0a365c',
+                            900: '#08213b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; font-size: 12px; }
+            .print-card { border: none !important; shadow: none !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased bg-slate-100 flex flex-col min-h-screen">
+
+    <!-- LOGIN SCREEN MODAL (IF NOT AUTHENTICATED) -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-brand-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-brand-900 text-amber-400 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-xl mb-3">
+                    <i class="fa-solid fa-hotel"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900">Grand Horizon HMS</h2>
+                <p class="text-xs text-slate-500 mt-1">Enterprise Property Management System</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username Admin</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="loginUsername" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:outline-none transition" placeholder="admin">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                        <input type="password" id="loginPassword" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:outline-none transition" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200/60 text-[11px] text-amber-800 space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-key text-amber-600"></i> Akun Demo Default:</p>
+                    <p>Username: <code class="bg-amber-100/80 px-1 py-0.5 rounded font-mono font-bold">admin</code> | Password: <code class="bg-amber-100/80 px-1 py-0.5 rounded font-mono font-bold">admin123</code></p>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-brand-700 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-lg shadow-brand-700/30 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Masuk ke System PMS</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[10px] text-slate-400">
+                Grand Horizon Software • Versi 3.0 Enterprise
+            </div>
+        </div>
+    </div>
+
+    <!-- APP MAIN WRAPPER -->
+    <div id="appContainer" class="flex flex-1 min-h-screen overflow-hidden">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="w-64 bg-brand-900 text-slate-300 flex-shrink-0 flex flex-col justify-between z-40 no-print transition-all duration-300">
+            <div>
+                <!-- Brand Logo Header -->
+                <div class="p-5 border-b border-brand-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-amber-400 text-brand-900 p-2.5 rounded-xl font-black shadow-md">
+                            <i class="fa-solid fa-hotel text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-white text-base tracking-wide leading-tight">Grand Horizon</h1>
+                            <span class="text-[10px] bg-brand-800 text-amber-300 font-semibold px-2 py-0.5 rounded-full inline-block mt-0.5">ENTERPRISE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logged User Info Badge -->
+                <div class="m-3 p-3 bg-brand-800/80 rounded-2xl border border-brand-700/50 flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-400 text-brand-900 flex items-center justify-center font-extrabold text-xs shadow" id="userAvatar">
+                        SA
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p id="currentUserDisplay" class="text-xs font-bold text-white truncate">Super Admin</p>
+                        <p id="currentRoleDisplay" class="text-[10px] text-brand-200 uppercase tracking-wider font-semibold truncate">SUPER ADMIN</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="px-3 py-2 space-y-1 text-xs">
+                    <a href="#" onclick="switchModule('dashboard')" id="nav-dashboard" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition bg-brand-700 text-white shadow-sm">
+                        <i class="fa-solid fa-chart-pie w-4 text-amber-400"></i>
+                        <span>Executive Dashboard</span>
+                    </a>
+                    <a href="#" onclick="switchModule('fo')" id="nav-fo" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-concierge-bell w-4"></i>
+                        <span>Front Office (FO)</span>
+                    </a>
+                    <a href="#" onclick="switchModule('hk')" id="nav-hk" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-broom w-4"></i>
+                        <span>Housekeeping (HK)</span>
+                    </a>
+                    <a href="#" onclick="switchModule('fbs')" id="nav-fbs" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-utensils w-4"></i>
+                        <span>F&B Service (POS)</span>
+                    </a>
+                    <a href="#" onclick="switchModule('finance')" id="nav-finance" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-wallet w-4"></i>
+                        <span>Keuangan & Billing</span>
+                    </a>
+                    <a href="#" onclick="switchModule('hr')" id="nav-hr" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-users-gear w-4"></i>
+                        <span>Human Resources (HR)</span>
+                    </a>
+                    <a href="#" onclick="switchModule('admin')" id="nav-admin" class="nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold transition text-slate-300 hover:bg-brand-800/60 hover:text-white">
+                        <i class="fa-solid fa-user-shield w-4 text-emerald-400"></i>
+                        <span>Manajemen Admin/Staf</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Bottom System Action -->
+            <div class="p-3 border-t border-brand-800 space-y-2">
+                <button onclick="handleLogout()" class="w-full py-2 px-3 bg-rose-900/40 hover:bg-rose-900/70 border border-rose-800/50 text-rose-300 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar (Logout)</span>
+                </button>
+                <div class="text-[10px] text-center text-slate-500 font-medium pt-1">
+                    Grand Horizon Enterprise v3.0
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN BODY CONTENT -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+            <!-- TOPBAR HEADER -->
+            <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center no-print sticky top-0 z-30 shadow-sm">
+                <div class="flex items-center space-x-4">
+                    <button id="mobileSidebarToggle" class="md:hidden text-slate-600 hover:text-slate-900 text-xl">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 id="currentModuleTitle" class="text-xl font-extrabold text-slate-900">Executive Dashboard</h2>
+                        <p class="text-xs text-slate-500">Sistem Kendali Utama Operasional Hotel</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="liveClock" class="text-xs font-bold text-slate-700"></p>
+                        <p class="text-[11px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Mode Online Live
+                        </p>
+                    </div>
+                    <button onclick="switchModule('finance')" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-receipt text-brand-600"></i>
+                        <span>Cetak Kuitansi</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTAINER CONTENT AREA -->
+            <div class="p-6 md:p-8 flex-1 space-y-6">
+
+                <!-- ================= 1. EXECUTIVE DASHBOARD ================= -->
+                <section id="module-dashboard" class="module-content space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Okupansi Kamar</p>
+                                <h3 id="dashOccupancyRate" class="text-2xl font-black text-slate-800 mt-1">0%</h3>
+                                <p id="dashOccupancyDetail" class="text-xs text-slate-500 mt-1 font-medium">0 / 0 Kamar Terisi</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-bed"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Pendapatan</p>
+                                <h3 id="dashTotalRevenue" class="text-xl font-black text-slate-800 mt-1">Rp 0</h3>
+                                <p class="text-xs text-emerald-600 font-semibold mt-1 inline-flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-up"></i> Akumulasi Transaksi
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-money-bill-trend-up"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tamu In-House</p>
+                                <h3 id="dashActiveGuests" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                                <p class="text-xs text-slate-500 mt-1 font-medium">Tamu Menginap Aktif</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tim Staf Aktif</p>
+                                <h3 id="dashTotalStaff" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                                <p class="text-xs text-brand-600 font-semibold mt-1">Sistem Admin & Staf</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                            <h4 class="font-bold text-slate-800 text-base mb-4">Proyeksi Pendapatan & Forecast</h4>
+                            <div class="h-64">
+                                <canvas id="chartRevenueOverview"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="font-bold text-slate-800 text-base mb-4">Status Kamar Real-time</h4>
+                            <div class="h-64 flex items-center justify-center">
+                                <canvas id="chartRoomStatusDoughnut"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 2. FRONT OFFICE (FO) ================= -->
+                <section id="module-fo" class="module-content hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Grid Matrix Kamar & Tamu</h3>
+                            <p class="text-xs text-slate-500">Kelola check-in, check-out, dan alokasi kamar tamu.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="openModal('addBookingModal')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-600/20 transition flex items-center space-x-2">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                               <span>Reservasi Baru</span>
+                            </button>
+                            <button onclick="openModal('addRoomModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center space-x-2">
+                                <i class="fa-solid fa-plus"></i>
+                               <span>Tambah Kamar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Room Grid Display -->
+                    <div id="foRoomGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Dynamic FO Room Cards -->
+                    </div>
+
+                    <!-- Active Reservations Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                            <h4 class="font-bold text-slate-800 text-sm">Daftar Transaksi Reservasi Tamu</h4>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px] tracking-wider">
+                                        <th class="p-3">ID / Tamu</th>
+                                        <th class="p-3">Kamar</th>
+                                        <th class="p-3">Tgl In/Out</th>
+                                        <th class="p-3">Total Biaya</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3 text-center">Aksi Cepat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="foBookingTable" class="divide-y divide-slate-100 font-medium">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 3. HOUSEKEEPING (HK) ================= -->
+                <section id="module-hk" class="module-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Manajemen Kebersihan Kamar (Housekeeping)</h3>
+                            <p class="text-xs text-slate-500">Pantau status kebersihan kamar, tugas staf, dan pemeliharaan.</p>
+                        </div>
+                    </div>
+
+                    <div id="hkRoomGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Dynamic Housekeeping Cards -->
+                    </div>
+                </section>
+
+                <!-- ================= 4. FOOD & BEVERAGE SERVICE (FBS POS) ================= -->
+                <section id="module-fbs" class="module-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Menu POS Catalog -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="font-bold text-slate-800 text-base">Menu Restoran & Room Service</h3>
+                            <div id="posCatalogGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <!-- Dynamic Catalog -->
+                            </div>
+                        </div>
+
+                        <!-- Order Form Charge to Room -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-4">
+                            <h3 class="font-bold text-slate-800 text-base border-b pb-3">Order POS / Charge ke Kamar</h3>
+                            <form id="posForm" onsubmit="handlePosOrder(event)" class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Kamar In-House</label>
+                                    <select id="posRoomSelect" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                        <!-- Populated -->
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Item Layanan</label>
+                                    <input type="text" id="posItemName" readonly required class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" placeholder="Klik menu di catalog">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Harga Satuan</label>
+                                        <input type="number" id="posItemPrice" readonly required class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Qty</label>
+                                        <input type="number" id="posItemQty" min="1" value="1" onchange="calcPosTotal()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-brand-50 rounded-xl border border-brand-100 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-brand-900">Total Biaya Layanan:</span>
+                                    <span id="posTotalDisplay" class="text-sm font-black text-brand-700">Rp 0</span>
+                                </div>
+
+                                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                    <span>Tambahkan ke Folio Kamar</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 5. KEUANGAN & CETAK KUITANSI ================= -->
+                <section id="module-finance" class="module-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Kasir & Generator Kuitansi / Invoice Resmi</h3>
+                            <p class="text-xs text-slate-500">Pilih reservasi tamu untuk menampilkan rincian folio lengkap dan mencetak nota resmi.</p>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <select id="invoiceSelectBooking" onchange="renderInvoice()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="">-- Pilih Transaksi Pemesanan --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Printable Invoice Card -->
+                    <div id="invoiceBox" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg max-w-3xl mx-auto hidden print-card">
+                        <div class="flex justify-between items-start border-b border-slate-200 pb-6">
+                            <div>
+                                <div class="flex items-center space-x-2 text-brand-900 mb-1">
+                                    <i class="fa-solid fa-hotel text-2xl text-amber-500"></i>
+                                    <span class="font-black text-2xl tracking-tight">Grand Horizon Hotel</span>
+                                </div>
+                                <p class="text-xs text-slate-500">Jl. Sunset Road No. 88, Seminyak, Bali</p>
+                                <p class="text-xs text-slate-500">Telp: (0361) 778-990 | email: accounting@grandhorizon.com</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-block px-3 py-1 bg-brand-50 text-brand-700 border border-brand-200 rounded-lg text-[10px] font-black uppercase tracking-wider mb-2">OFFICIAL RECEIPT</span>
+                                <p id="invNum" class="text-xs font-mono font-bold text-slate-800">#INV-0000</p>
+                                <p id="invDate" class="text-[11px] text-slate-500 mt-0.5"></p>
+                            </div>
+                        </div>
+
+                        <!-- Info Tamu & Menginap -->
+                        <div class="grid grid-cols-2 gap-4 py-5 border-b border-slate-100 text-xs">
+                            <div>
+                                <p class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Detail Tamu</p>
+                                <p id="invGuestName" class="font-bold text-slate-800 text-sm mt-0.5">-</p>
+                                <p id="invGuestPhone" class="text-slate-600">-</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Informasi Menginap</p>
+                                <p id="invRoomDetail" class="font-bold text-slate-800 text-sm mt-0.5">-</p>
+                                <p id="invStayDates" class="text-slate-600">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Item Rincian -->
+                        <div class="py-4">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-400 uppercase text-[9px] font-bold tracking-wider">
+                                        <th class="py-2">Item Layanan / Tagihan</th>
+                                        <th class="py-2 text-center">Qty</th>
+                                        <th class="py-2 text-right">Harga Satuan</th>
+                                        <th class="py-2 text-right">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invItemsTable" class="divide-y divide-slate-100 font-medium">
+                                    <!-- Dynamic invoice items -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals & Taxes -->
+                        <div class="border-t border-slate-200 pt-4 flex justify-end">
+                            <div class="w-64 space-y-1.5 text-xs">
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Subtotal Tagihan</span>
+                                    <span id="invSubtotal">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Service Charge (5%)</span>
+                                    <span id="invServiceCharge">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Pajak Olah/PB1 (10%)</span>
+                                    <span id="invTax">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between font-black text-slate-900 text-base border-t border-slate-200 pt-2">
+                                    <span>TOTAL BAYAR</span>
+                                    <span id="invGrandTotal" class="text-brand-600">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center no-print">
+                            <span class="text-[10px] text-slate-400 italic">*Dicetak secara otomatis oleh Grand Horizon HMS System</span>
+                            <button onclick="window.print()" class="px-5 py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-2 transition">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Cetak Kuitansi Resmi</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 6. HUMAN RESOURCES (HR) ================= -->
+                <section id="module-hr" class="module-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Human Resources & Jadwal Staf</h3>
+                            <p class="text-xs text-slate-500">Monitoring kehadiran staf, jadwal shift, dan divisi kerja.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px]">
+                                        <th class="p-3">Nama Staf</th>
+                                        <th class="p-3">Departemen</th>
+                                        <th class="p-3">Shift Kerja</th>
+                                        <th class="p-3">Status Presensi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hrStaffTable" class="divide-y divide-slate-100 font-medium">
+                                    <!-- Dynamic HR Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 7. MANAJEMEN ADMIN & STAF ================= -->
+                <section id="module-admin" class="module-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Kontrol Akses Staf & Admin Sistem</h3>
+                            <p class="text-xs text-slate-500">Tambah admin lain, atur role hak akses, dan manajemen kredensial login.</p>
+                        </div>
+                        <button onclick="openModal('addAdminModal')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Tambah Admin / Staf Baru</span>
+                        </button>
+                    </div>
+
+                    <!-- Admin & Staff Accounts Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px] tracking-wider">
+                                        <th class="p-3">Pengguna / Staff</th>
+                                        <th class="p-3">Username Login</th>
+                                        <th class="p-3">Role Hak Akses</th>
+                                        <th class="p-3">Departemen</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTableBody" class="divide-y divide-slate-100 font-medium">
+                                    <!-- Dynamic Admin Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: TAMBAH ADMIN / STAF BARU -->
+    <div id="addAdminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('addAdminModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Tambah Admin / User Baru</h3>
+            <form id="addAdminForm" onsubmit="handleAddAdmin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap Staf</label>
+                    <input type="text" id="newAdminFullName" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Rian Ardianto">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username Login</label>
+                    <input type="text" id="newAdminUsername" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="rian_fo">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                    <input type="password" id="newAdminPassword" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Role Hak Akses</label>
+                    <select id="newAdminRole" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="Super Admin">Super Admin (Akses Penuh)</option>
+                        <option value="Front Office">Front Office (FO)</option>
+                        <option value="Housekeeping">Housekeeping (HK)</option>
+                        <option value="F&B Service">F&B Service (FBS)</option>
+                        <option value="Finance">Finance & Accounting</option>
+                        <option value="HR">Human Resources (HR)</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('addAdminModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-md">Simpan User Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: RESERVASI TAMU BARU -->
+    <div id="addBookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('addBookingModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Buat Reservasi Baru</h3>
+            <form id="addBookingForm" onsubmit="handleAddBooking(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Tamu</label>
+                        <input type="text" id="bookGuestName" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Budi Pratama">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">No. WhatsApp</label>
+                        <input type="tel" id="bookGuestPhone" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="08123456789">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Kamar (Tersedia)</label>
+                    <select id="bookRoomSelect" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Options populated -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Check-In</label>
+                        <input type="date" id="bookCheckIn" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Check-Out</label>
+                        <input type="date" id="bookCheckOut" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('addBookingModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-md">Proses Reservasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TAMBAH KAMAR -->
+    <div id="addRoomModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('addRoomModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-800 mb-4">Tambah Kamar Baru</h3>
+            <form id="addRoomForm" onsubmit="handleAddRoom(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Kamar</label>
+                    <input type="text" id="newRoomNum" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="101">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tipe Kamar</label>
+                    <select id="newRoomType" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="Standard Room">Standard Room (Rp 450.000)</option>
+                        <option value="Deluxe Room">Deluxe Room (Rp 750.000)</option>
+                        <option value="Executive Suite">Executive Suite (Rp 1.300.000)</option>
+                        <option value="Presidential Suite">Presidential Suite (Rp 2.500.000)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Harga per Malam (Rp)</label>
+                    <input type="number" id="newRoomPrice" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="450000">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('addRoomModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-md">Simpan Kamar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 text-xs z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMsg" class="font-medium">Notifikasi</span>
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM ENGINE -->
+    <script>
+        // DEFAULT INITIAL SYSTEM DATA
+        const DEFAULT_USERS = [
+            { id: 'u1', fullName: 'Super Admin Utama', username: 'admin', password: 'admin123', role: 'Super Admin', dept: 'Executive', status: 'Aktif' },
+            { id: 'u2', fullName: 'Siti Rahma (FO Leader)', username: 'siti_fo', password: '123', role: 'Front Office', dept: 'Front Office', status: 'Aktif' },
+            { id: 'u3', fullName: 'Budi Santoso (HK Manager)', username: 'budi_hk', password: '123', role: 'Housekeeping', dept: 'Housekeeping', status: 'Aktif' }
+        ];
+
+        const DEFAULT_ROOMS = [
+            { id: 'r101', number: '101', type: 'Standard Room', price: 450000, status: 'Terisi' },
+            { id: 'r102', number: '102', type: 'Standard Room', price: 450000, status: 'Tersedia' },
+            { id: 'r103', number: '103', type: 'Deluxe Room', price: 750000, status: 'Kotor' },
+            { id: 'r201', number: '201', type: 'Executive Suite', price: 1300000, status: 'Terisi' },
+            { id: 'r202', number: '202', type: 'Executive Suite', price: 1300000, status: 'Pemeliharaan' },
+            { id: 'r301', number: '301', type: 'Presidential Suite', price: 2500000, status: 'Tersedia' }
+        ];
+
+        const DEFAULT_SERVICES = [
+            { id: 's1', name: 'Nasi Goreng Wagyu', price: 65000, icon: 'fa-utensils' },
+            { id: 's2', name: 'Club Sandwich & Fries', price: 50000, icon: 'fa-burger' },
+            { id: 's3', name: 'Fresh Avocado Juice', price: 35000, icon: 'fa-glass-water' },
+            { id: 's4', name: 'Laundry Express (Per Kg)', price: 30000, icon: 'fa-shirt' },
+            { id: 's5', name: 'Spa Massage (1 Jam)', price: 200000, icon: 'fa-spa' }
+        ];
+
+        const DEFAULT_BOOKINGS = [
+            {
+                id: 'BK-8801',
+                guestName: 'Hendrik Wijaya',
+                guestPhone: '081234567890',
+                roomId: 'r101',
+                roomNumber: '101',
+                roomType: 'Standard Room',
+                checkIn: '2026-10-24',
+                checkOut: '2026-10-26',
+                status: 'Checked-In',
+                roomPriceTotal: 900000,
+                addOns: [{ name: 'Nasi Goreng Wagyu', price: 65000, qty: 2 }]
+            },
+            {
+                id: 'BK-8802',
+                guestName: 'Maya Indah',
+                guestPhone: '081987654321',
+                roomId: 'r201',
+                roomNumber: '201',
+                roomType: 'Executive Suite',
+                checkIn: '2026-10-23',
+                checkOut: '2026-10-25',
+                status: 'Checked-In',
+                roomPriceTotal: 2600000,
+                addOns: [{ name: 'Spa Massage (1 Jam)', price: 200000, qty: 1 }]
+            }
+        ];
+
+        // STATE APP
+        let users = JSON.parse(localStorage.getItem('gh_e_users')) || DEFAULT_USERS;
+        let rooms = JSON.parse(localStorage.getItem('gh_e_rooms')) || DEFAULT_ROOMS;
+        let bookings = JSON.parse(localStorage.getItem('gh_e_bookings')) || DEFAULT_BOOKINGS;
+        let services = DEFAULT_SERVICES;
+        let currentUser = JSON.parse(localStorage.getItem('gh_e_session')) || null;
+
+        // CHARTS INSTANCES
+        let chartRev = null;
+        let chartPie = null;
+
+        window.onload = function() {
+            updateLiveClock();
+            setInterval(updateLiveClock, 1000);
+
+            if(!currentUser) {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            } else {
+                document.getElementById('loginScreen').classList.add('hidden');
+                initAuthenticatedApp();
+            }
+
+            // Mobile menu toggle
+            document.getElementById('mobileSidebarToggle').addEventListener('click', function() {
+                const sb = document.getElementById('sidebar');
+                sb.classList.toggle('hidden');
+            });
+        };
+
+        function saveData() {
+            localStorage.setItem('gh_e_users', JSON.stringify(users));
+            localStorage.setItem('gh_e_rooms', JSON.stringify(rooms));
+            localStorage.setItem('gh_e_bookings', JSON.stringify(bookings));
+        }
+
+        // AUTHENTICATION
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+
+            const found = users.find(x => x.username === u && x.password === p && x.status === 'Aktif');
+            if(found) {
+                currentUser = found;
+                localStorage.setItem('gh_e_session', JSON.stringify(currentUser));
+                document.getElementById('loginScreen').classList.add('hidden');
+                showToast(`Selamat datang kembali, ${found.fullName}!`);
+                initAuthenticatedApp();
+            } else {
+                showToast('Username atau password salah / tidak aktif!', 'error');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('gh_e_session');
+            currentUser = null;
+            location.reload();
+        }
+
+        function initAuthenticatedApp() {
+            document.getElementById('currentUserDisplay').innerText = currentUser.fullName;
+            document.getElementById('currentRoleDisplay').innerText = currentUser.role;
+            document.getElementById('userAvatar').innerText = currentUser.fullName.substring(0,2).toUpperCase();
+
+            // Restrict admin module if not Super Admin
+            const adminNav = document.getElementById('nav-admin');
+            if(currentUser.role !== 'Super Admin') {
+                adminNav.style.display = 'none';
+            } else {
+                adminNav.style.display = 'flex';
+            }
+
+            renderDashboard();
+            renderFORooms();
+            renderHKRooms();
+            renderPosCatalog();
+            renderAdmins();
+            renderHRStaff();
+            populateDropdowns();
+            initCharts();
+        }
+
+        // SWITCH MODULE
+        function switchModule(modId) {
+            if(modId === 'admin' && currentUser.role !== 'Super Admin') {
+                showToast('Hanya Super Admin yang bisa mengakses halaman ini!', 'error');
+                return;
+            }
+
+            document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-brand-700', 'text-white');
+                el.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`module-${modId}`).classList.remove('hidden');
+            const nav = document.getElementById(`nav-${modId}`);
+            if(nav) {
+                nav.classList.add('bg-brand-700', 'text-white');
+                nav.classList.remove('text-slate-300');
+            }
+
+            const titles = {
+                'dashboard': 'Executive Dashboard',
+                'fo': 'Front Office Operasional',
+                'hk': 'Housekeeping Status',
+                'fbs': 'Food & Beverage Service POS',
+                'finance': 'Keuangan & Kasir Billing',
+                'hr': 'Human Resources & Staf',
+                'admin': 'Manajemen Admin & User System'
+            };
+            document.getElementById('currentModuleTitle').innerText = titles[modId] || 'HMS Module';
+
+            if(modId === 'dashboard') updateCharts();
+            if(modId === 'finance' || modId === 'fbs') populateDropdowns();
+        }
+
+        function updateLiveClock() {
+            const now = new Date();
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('liveClock').innerText = now.toLocaleDateString('id-ID', options);
+        }
+
+        function formatRp(val) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            const m = document.getElementById('toastMsg');
+            const i = document.getElementById('toastIcon');
+
+            m.innerText = msg;
+            if(type === 'error') {
+                i.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+            } else {
+                i.className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+            }
+
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                t.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // ================= DASHBOARD & CHARTS =================
+        function renderDashboard() {
+            const totalR = rooms.length;
+            const occupiedR = rooms.filter(r => r.status === 'Terisi').length;
+            const activeG = bookings.filter(b => b.status === 'Checked-In').length;
+
+            let totalRev = 0;
+            bookings.forEach(b => {
+                if(b.status !== 'Cancelled') {
+                    totalRev += b.roomPriceTotal || 0;
+                    if(b.addOns) b.addOns.forEach(a => totalRev += (a.price * a.qty));
+                }
+            });
+
+            const occPct = totalR > 0 ? Math.round((occupiedR / totalR) * 100) : 0;
+
+            document.getElementById('dashOccupancyRate').innerText = `${occPct}%`;
+            document.getElementById('dashOccupancyDetail').innerText = `${occupiedR} / ${totalR} Kamar Terisi`;
+            document.getElementById('dashTotalRevenue').innerText = formatRp(totalRev);
+            document.getElementById('dashActiveGuests').innerText = activeG;
+            document.getElementById('dashTotalStaff').innerText = users.length;
+        }
+
+        function initCharts() {
+            const ctxRev = document.getElementById('chartRevenueOverview').getContext('2d');
+            chartRev = new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: ['Jun', 'Jul', 'Agt', 'Sep', 'Okt'],
+                    datasets: [{
+                        label: 'Pendapatan (Rp)',
+                        data: [15000000, 22000000, 18500000, 24000000, 31000000],
+                        backgroundColor: '#0284c7',
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxPie = document.getElementById('chartRoomStatusDoughnut').getContext('2d');
+            chartPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tersedia', 'Terisi', 'Kotor', 'Pemeliharaan'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#10b981', '#f43f5e', '#f59e0b', '#64748b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            updateCharts();
+        }
+
+        function updateCharts() {
+            if(!chartPie) return;
+            const avail = rooms.filter(r => r.status === 'Tersedia').length;
+            const occ = rooms.filter(r => r.status === 'Terisi').length;
+            const dirty = rooms.filter(r => r.status === 'Kotor').length;
+            const maint = rooms.filter(r => r.status === 'Pemeliharaan').length;
+
+            chartPie.data.datasets[0].data = [avail, occ, dirty, maint];
+            chartPie.update();
+        }
+
+        // ================= FRONT OFFICE =================
+        function renderFORooms() {
+            const grid = document.getElementById('foRoomGrid');
+            grid.innerHTML = '';
+
+            rooms.forEach(room => {
+                let badge = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                if(room.status === 'Terisi') badge = 'bg-rose-100 text-rose-800 border-rose-200';
+                if(room.status === 'Kotor') badge = 'bg-amber-100 text-amber-800 border-amber-200';
+                if(room.status === 'Pemeliharaan') badge = 'bg-slate-200 text-slate-700 border-slate-300';
+
+                grid.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xl font-black text-slate-800">Kamar ${room.number}</span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badge}">${room.status}</span>
+                            </div>
+                            <p class="text-xs text-brand-600 font-bold">${room.type}</p>
+                            <p class="text-xs text-slate-500 font-semibold">${formatRp(room.price)} / malam</p>
+                        </div>
+                        <div class="pt-3 mt-3 border-t border-slate-100 flex justify-between items-center">
+                            <button onclick="deleteRoom('${room.id}')" class="text-xs text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i> Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Table Bookings
+            const table = document.getElementById('foBookingTable');
+            table.innerHTML = '';
+            bookings.forEach(b => {
+                table.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3">
+                            <div class="font-bold text-slate-800">${b.guestName}</div>
+                            <div class="text-[10px] text-slate-400">${b.id} • ${b.guestPhone}</div>
+                        </td>
+                        <td class="p-3 font-bold text-slate-700">Kamar ${b.roomNumber}</td>
+                        <td class="p-3 text-slate-500">${b.checkIn} s/d ${b.checkOut}</td>
+                        <td class="p-3 font-bold text-slate-800">${formatRp(b.roomPriceTotal)}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">${b.status}</span></td>
+                        <td class="p-3 text-center">
+                            ${b.status === 'Booked' ? `<button onclick="setBookingStatus('${b.id}', 'Checked-In')" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold">Check-In</button>` : ''}
+                            ${b.status === 'Checked-In' ? `<button onclick="setBookingStatus('${b.id}', 'Checked-Out')" class="px-2 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold">Check-Out</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            renderDashboard();
+        }
+
+        function setBookingStatus(bId, status) {
+            const b = bookings.find(x => x.id === bId);
+            if(b) {
+                b.status = status;
+                const r = rooms.find(x => x.id === b.roomId);
+                if(r) {
+                    if(status === 'Checked-In') r.status = 'Terisi';
+                    if(status === 'Checked-Out') r.status = 'Kotor';
+                }
+                saveData();
+                renderFORooms();
+                renderHKRooms();
+                showToast(`Status transaksi ${b.guestName} diperbarui!`);
+            }
+        }
+
+        function handleAddBooking(e) {
+            e.preventDefault();
+            const name = document.getElementById('bookGuestName').value;
+            const phone = document.getElementById('bookGuestPhone').value;
+            const roomId = document.getElementById('bookRoomSelect').value;
+            const cIn = document.getElementById('bookCheckIn').value;
+            const cOut = document.getElementById('bookCheckOut').value;
+
+            const room = rooms.find(r => r.id === roomId);
+            if(!room) return;
+
+            const newB = {
+                id: 'BK-' + Math.floor(1000 + Math.random() * 9000),
+                guestName: name,
+                guestPhone: phone,
+                roomId: room.id,
+                roomNumber: room.number,
+                roomType: room.type,
+                checkIn: cIn,
+                checkOut: cOut,
+                status: 'Booked',
+                roomPriceTotal: room.price * 2,
+                addOns: []
+            };
+
+            bookings.unshift(newB);
+            saveData();
+            closeModal('addBookingModal');
+            renderFORooms();
+            showToast('Reservasi berhasil ditambahkan!');
+        }
+
+        function handleAddRoom(e) {
+            e.preventDefault();
+            const num = document.getElementById('newRoomNum').value;
+            const type = document.getElementById('newRoomType').value;
+            const price = parseInt(document.getElementById('newRoomPrice').value);
+
+            rooms.push({ id: 'r' + Date.now(), number: num, type: type, price: price, status: 'Tersedia' });
+            saveData();
+            closeModal('addRoomModal');
+            renderFORooms();
+            renderHKRooms();
+            showToast(`Kamar ${num} berhasil ditambahkan!`);
+        }
+
+        function deleteRoom(id) {
+            if(confirm("Hapus kamar ini?")) {
+                rooms = rooms.filter(r => r.id !== id);
+                saveData();
+                renderFORooms();
+            }
+        }
+
+        // ================= HOUSEKEEPING =================
+        function renderHKRooms() {
+            const grid = document.getElementById('hkRoomGrid');
+            grid.innerHTML = '';
+
+            rooms.forEach(room => {
+                grid.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-slate-800 text-base">Kamar ${room.number}</h4>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-100">${room.status}</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-100 flex gap-2">
+                            ${room.status === 'Kotor' ? `
+                                <button onclick="setRoomStatus('${room.id}', 'Tersedia')" class="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow">
+                                    <i class="fa-solid fa-broom"></i> Selesai Dibersihkan
+                                </button>
+                            ` : ''}
+                            ${room.status === 'Tersedia' ? `
+                                <button onclick="setRoomStatus('${room.id}', 'Pemeliharaan')" class="w-full py-1.5 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">
+                                    Perbaikan
+                                </button>
+                            ` : ''}
+                            ${room.status === 'Pemeliharaan' ? `
+                                <button onclick="setRoomStatus('${room.id}', 'Tersedia')" class="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">
+                                    Siap Pakai
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function setRoomStatus(rId, status) {
+            const r = rooms.find(x => x.id === rId);
+            if(r) {
+                r.status = status;
+                saveData();
+                renderHKRooms();
+                renderFORooms();
+                showToast(`Status Kamar ${r.number} diubah ke ${status}`);
+            }
+        }
+
+        // ================= FBS POS =================
+        function renderPosCatalog() {
+            const grid = document.getElementById('posCatalogGrid');
+            grid.innerHTML = '';
+            services.forEach(s => {
+                grid.innerHTML += `
+                    <div onclick="selectPosItem('${s.name}', ${s.price})" class="p-3 bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-xl cursor-pointer transition">
+                        <i class="fa-solid ${s.icon} text-brand-600 text-base mb-1"></i>
+                        <h5 class="font-bold text-xs text-slate-800">${s.name}</h5>
+                        <p class="text-[11px] font-bold text-brand-600 mt-1">${formatRp(s.price)}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function selectPosItem(name, price) {
+            document.getElementById('posItemName').value = name;
+            document.getElementById('posItemPrice').value = price;
+            calcPosTotal();
+        }
+
+        function calcPosTotal() {
+            const price = parseInt(document.getElementById('posItemPrice').value) || 0;
+            const qty = parseInt(document.getElementById('posItemQty').value) || 1;
+            document.getElementById('posTotalDisplay').innerText = formatRp(price * qty);
+        }
+
+        function handlePosOrder(e) {
+            e.preventDefault();
+            const bId = document.getElementById('posRoomSelect').value;
+            const name = document.getElementById('posItemName').value;
+            const price = parseInt(document.getElementById('posItemPrice').value);
+            const qty = parseInt(document.getElementById('posItemQty').value);
+
+            const b = bookings.find(x => x.id === bId);
+            if(!b) { showToast('Pilih kamar aktif!', 'error'); return; }
+
+            if(!b.addOns) b.addOns = [];
+            b.addOns.push({ name: name, price: price, qty: qty });
+
+            saveData();
+            showToast(`Order ${name} di-charge ke Kamar ${b.roomNumber}`);
+            document.getElementById('posForm').reset();
+            document.getElementById('posTotalDisplay').innerText = 'Rp 0';
+        }
+
+        // ================= FINANCE & INVOICE =================
+        function populateDropdowns() {
+            // POS Kamar
+            const posSel = document.getElementById('posRoomSelect');
+            posSel.innerHTML = '<option value="">-- Pilih Kamar In-House --</option>';
+            bookings.filter(b => b.status === 'Checked-In').forEach(b => {
+                posSel.innerHTML += `<option value="${b.id}">Kamar ${b.roomNumber} - a.n ${b.guestName}</option>`;
+            });
+
+            // Booking Modal Kamar
+            const bookSel = document.getElementById('bookRoomSelect');
+            bookSel.innerHTML = '<option value="">-- Pilih Kamar Tersedia --</option>';
+            rooms.filter(r => r.status === 'Tersedia').forEach(r => {
+                bookSel.innerHTML += `<option value="${r.id}">Kamar ${r.number} (${r.type}) - ${formatRp(r.price)}</option>`;
+            });
+
+            // Invoice Dropdown
+            const invSel = document.getElementById('invoiceSelectBooking');
+            invSel.innerHTML = '<option value="">-- Pilih Transaksi Pemesanan --</option>';
+            bookings.forEach(b => {
+                invSel.innerHTML += `<option value="${b.id}">${b.id} - Kamar ${b.roomNumber} (${b.guestName})</option>`;
+            });
+        }
+
+        function renderInvoice() {
+            const bId = document.getElementById('invoiceSelectBooking').value;
+            const box = document.getElementById('invoiceBox');
+
+            if(!bId) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            const b = bookings.find(x => x.id === bId);
+            if(!b) return;
+
+            document.getElementById('invNum').innerText = `#${b.id}`;
+            document.getElementById('invDate').innerText = `Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
+            document.getElementById('invGuestName').innerText = b.guestName;
+            document.getElementById('invGuestPhone').innerText = `Telp: ${b.guestPhone}`;
+            document.getElementById('invRoomDetail').innerText = `Kamar ${b.roomNumber} (${b.roomType})`;
+            document.getElementById('invStayDates').innerText = `${b.checkIn} s/d ${b.checkOut}`;
+
+            const tbody = document.getElementById('invItemsTable');
+            tbody.innerHTML = '';
+            let subtotal = 0;
+
+            // Room charge
+            const roomSub = b.roomPriceTotal || 0;
+            subtotal += roomSub;
+            tbody.innerHTML += `
+                <tr>
+                    <td class="py-2 font-bold text-slate-800">Sewa ${b.roomType} (Kamar ${b.roomNumber})</td>
+                    <td class="py-2 text-center">1 Paket</td>
+                    <td class="py-2 text-right">${formatRp(roomSub)}</td>
+                    <td class="py-2 text-right font-bold">${formatRp(roomSub)}</td>
+                </tr>
+            `;
+
+            // Addons
+            if(b.addOns) {
+                b.addOns.forEach(item => {
+                    const itemSub = item.price * item.qty;
+                    subtotal += itemSub;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="py-2 text-slate-700">Layanan: ${item.name}</td>
+                            <td class="py-2 text-center">${item.qty}</td>
+                            <td class="py-2 text-right">${formatRp(item.price)}</td>
+                            <td class="py-2 text-right font-bold">${formatRp(itemSub)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const serviceCharge = subtotal * 0.05;
+            const tax = subtotal * 0.10;
+            const grandTotal = subtotal + serviceCharge + tax;
+
+            document.getElementById('invSubtotal').innerText = formatRp(subtotal);
+            document.getElementById('invServiceCharge').innerText = formatRp(serviceCharge);
+            document.getElementById('invTax').innerText = formatRp(tax);
+            document.getElementById('invGrandTotal').innerText = formatRp(grandTotal);
+
+            box.classList.remove('hidden');
+        }
+
+        // ================= HR & ADMIN MANAGEMENT =================
+        function renderHRStaff() {
+            const tbody = document.getElementById('hrStaffTable');
+            tbody.innerHTML = '';
+
+            users.forEach(u => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-bold text-slate-800">${u.fullName}</td>
+                        <td class="p-3 text-slate-600">${u.dept}</td>
+                        <td class="p-3 text-slate-600">Shift Pagi (07:00 - 15:00)</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">Hadir / Shift Aktif</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderAdmins() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(u => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-bold text-slate-800">${u.fullName}</td>
+                        <td class="p-3 font-mono text-slate-600">${u.username}</td>
+                        <td class="p-3 font-bold text-brand-600">${u.role}</td>
+                        <td class="p-3 text-slate-600">${u.dept}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">${u.status}</span></td>
+                        <td class="p-3 text-center">
+                            ${u.username !== 'admin' ? `
+                                <button onclick="deleteAdmin('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-user-xmark"></i> Hapus</button>
+                            ` : '<span class="text-slate-400 italic">Primary Admin</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function handleAddAdmin(e) {
+            e.preventDefault();
+            const name = document.getElementById('newAdminFullName').value;
+            const u = document.getElementById('newAdminUsername').value;
+            const p = document.getElementById('newAdminPassword').value;
+            const role = document.getElementById('newAdminRole').value;
+
+            if(users.some(x => x.username === u)) {
+                showToast('Username sudah digunakan!', 'error');
+                return;
+            }
+
+            users.push({
+                id: 'u' + Date.now(),
+                fullName: name,
+                username: u,
+                password: p,
+                role: role,
+                dept: role,
+                status: 'Aktif'
+            });
+
+            saveData();
+            closeModal('addAdminModal');
+            renderAdmins();
+            renderHRStaff();
+            showToast(`Admin ${name} berhasil ditambahkan!`);
+        }
+
+        function deleteAdmin(id) {
+            if(confirm("Hapus admin ini?")) {
+                users = users.filter(x => x.id !== id);
+                saveData();
+                renderAdmins();
+                renderHRStaff();
+                showToast("Pengguna admin dihapus!");
+            }
+        }
+
+        // MODAL UTILITIES
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>
